@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickBite Food Delivery</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f2;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background-color: #154d29;
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    margin: 0;
+  }
+  .cart-count {
+    background-color: #e2412f;
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  /* Main layout: menu on the left, order panel on the right */
+  .container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 20px auto;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .left {
+    flex: 1;
+  }
+  .right {
+    width: 340px;
+    background-color: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  /* Menu: always 2 items in each row */
+  .menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  /* Each item card: emoji on the left, details on the right */
+  .item {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .item .emoji {
+    font-size: 48px;
+    width: 70px;
+    text-align: center;
+  }
+  .item .details {
+    flex: 1;
+  }
+  .item h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+  }
+  .item p {
+    color: #666;
+    font-size: 13px;
+    margin: 0 0 8px 0;
+  }
+  .item .bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .price {
+    font-weight: bold;
+    font-size: 17px;
+  }
+  .add-btn {
+    background-color: #1f6b3a;
+    color: white;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .add-btn:hover {
+    background-color: #154d29;
+  }
+
+  /* Cart rows: name, quantity buttons and price in one line */
+  .cart-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+  .cart-name {
+    flex: 1;
+  }
+  .cart-qty {
+    margin: 0 10px;
+    white-space: nowrap;
+  }
+  .cart-price {
+    width: 70px;
+    text-align: right;
+  }
+  .small-btn {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .total {
+    font-weight: bold;
+    font-size: 18px;
+    margin: 12px 0;
+  }
+
+  /* Form */
+  label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+  }
+  .error {
+    color: red;
+    font-size: 13px;
+  }
+  .order-btn {
+    width: 100%;
+    background-color: #e2412f;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 15px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  /* Popup */
+  .popup-bg {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+  .popup-box {
+    background-color: white;
+    width: 340px;
+    max-width: 90%;
+    margin: 120px auto;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .tick {
+    width: 70px;
+    height: 70px;
+    line-height: 70px;
+    font-size: 38px;
+    color: white;
+    background-color: #1f6b3a;
+    border-radius: 50%;
+    margin: 0 auto 10px auto;
+  }
+  .done-btn {
+    background-color: #1f6b3a;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* Tablet and mobile: order panel goes below the menu (menu still 2 per row) */
+  @media (max-width: 800px) {
+    .container {
+      flex-direction: column;
+    }
+    .left {
+      width: 100%;
+    }
+    .right {
+      width: 100%;
+    }
+  }
+
+  /* Small phones: keep 2 per row, but stack emoji above the text to fit */
+  @media (max-width: 520px) {
+    .menu {
+      gap: 8px;
+    }
+    .item {
+      flex-direction: column;
+      text-align: center;
+      padding: 10px;
+    }
+    .item .emoji {
+      font-size: 38px;
+      width: auto;
+    }
+    .item .details {
+      width: 100%;
+    }
+    .item .bottom {
+      flex-direction: column;
+      gap: 6px;
+    }
+    .item h3 {
+      font-size: 14px;
+    }
+    .item p {
+      display: none;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>QuickBite</h1>
+    <div class="cart-count" id="cartCount">0 items</div>
+  </div>
+
+  <div class="container">
+
+    <!-- Left side: food items -->
+    <div class="left">
+      <h2>Our Menu</h2>
+      <div class="menu" id="menu"></div>
+    </div>
+
+    <!-- Right side: cart and customer details -->
+    <div class="right">
+      <h2>Your Order</h2>
+      <div id="cartItems">Your cart is empty.</div>
+      <div class="total">Total: <span id="total">Rs. 0</span></div>
+
+      <h3>Customer Details</h3>
+
+      <label>Full Name</label>
+      <input type="text" id="name">
+      <div class="error" id="errName"></div>
+
+      <label>Phone Number</label>
+      <input type="text" id="phone" maxlength="10">
+      <div class="error" id="errPhone"></div>
+
+      <label>Delivery Address</label>
+      <textarea id="address" rows="3"></textarea>
+      <div class="error" id="errAddress"></div>
+
+      <label>Payment Method</label>
+      <select id="payment">
+        <option>Cash on delivery</option>
+        <option>UPI</option>
+        <option>Card</option>
+      </select>
+
+      <div class="error" id="errCart"></div>
+      <button class="order-btn" onclick="placeOrder()">Place Order</button>
+    </div>
+
+  </div>
+
+  <!-- Order confirmed popup -->
+  <div class="popup-bg" id="popup">
+    <div class="popup-box">
+      <div class="tick">&#10003;</div>
+      <h2>Order Confirmed!</h2>
+      <p id="popupMessage"></p>
+      <p><b>Order ID:</b> <span id="orderId"></span></p>
+      <p><b>Total:</b> <span id="popupTotal"></span></p>
+      <button class="done-btn" onclick="closePopup()">Done</button>
+    </div>
+  </div>
+
+<script>
+  // Food items list
+  var foods = [
+    { id: 1,  name: "Chicken Biryani",      price: 220, emoji: "🍛", desc: "Spiced rice with chicken" },
+    { id: 2,  name: "Paneer Butter Masala", price: 190, emoji: "🧈", desc: "Creamy paneer gravy" },
+    { id: 3,  name: "Veg Fried Rice",       price: 140, emoji: "🍚", desc: "Rice with vegetables" },
+    { id: 4,  name: "Masala Dosa",          price: 90,  emoji: "🥞", desc: "Crispy dosa with masala" },
+    { id: 5,  name: "Idli (3 pcs)",         price: 60,  emoji: "⚪", desc: "Soft idli with sambar" },
+    { id: 6,  name: "Veg Burger",           price: 110, emoji: "🍔", desc: "Burger with veg patty" },
+    { id: 7,  name: "French Fries",         price: 80,  emoji: "🍟", desc: "Crispy potato fries" },
+    { id: 8,  name: "Margherita Pizza",     price: 240, emoji: "🍕", desc: "Cheese and tomato pizza" },
+    { id: 9,  name: "Gulab Jamun (2)",      price: 70,  emoji: "🍡", desc: "Sweet milk dumplings" },
+    { id: 10, name: "Chocolate Brownie",    price: 99,  emoji: "🍫", desc: "Soft chocolate brownie" },
+    { id: 11, name: "Filter Coffee",        price: 40,  emoji: "☕", desc: "South Indian coffee" },
+    { id: 12, name: "Fresh Lime Soda",      price: 50,  emoji: "🍋", desc: "Cool lime soda" }
+  ];
+
+  // Cart stores: id and quantity
+  var cart = [];
+
+  // Show the menu on the page
+  function showMenu() {
+    var html = "";
+    for (var i = 0; i < foods.length; i++) {
+      html += '<div class="item">';
+      html += '<div class="emoji">' + foods[i].emoji + '</div>';
+      html += '<div class="details">';
+      html += '<h3>' + foods[i].name + '</h3>';
+      html += '<p>' + foods[i].desc + '</p>';
+      html += '<div class="bottom">';
+      html += '<span class="price">Rs. ' + foods[i].price + '</span>';
+      html += '<button class="add-btn" onclick="addToCart(' + foods[i].id + ')">Add</button>';
+      html += '</div>';
+      html += '</div>';
+      html += '</div>';
+    }
+    document.getElementById("menu").innerHTML = html;
+  }
+
+  // Find the food by id
+  function getFood(id) {
+    for (var i = 0; i < foods.length; i++) {
+      if (foods[i].id == id) {
+        return foods[i];
+      }
+    }
+  }
+
+  // Add an item to the cart
+  function addToCart(id) {
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id == id) {
+        cart[i].qty = cart[i].qty + 1;
+        showCart();
+        return;
+      }
+    }
+    cart.push({ id: id, qty: 1 });
+    showCart();
+  }
+
+  // Remove one quantity of an item
+  function removeFromCart(id) {
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id == id) {
+        cart[i].qty = cart[i].qty - 1;
+        if (cart[i].qty == 0) {
+          cart.splice(i, 1);
+        }
+        break;
+      }
+    }
+    showCart();
+  }
+
+  // Calculate the total price
+  function getTotal() {
+    var total = 0;
+    for (var i = 0; i < cart.length; i++) {
+      total = total + getFood(cart[i].id).price * cart[i].qty;
+    }
+    return total;
+  }
+
+  // Count the total items
+  function getCount() {
+    var count = 0;
+    for (var i = 0; i < cart.length; i++) {
+      count = count + cart[i].qty;
+    }
+    return count;
+  }
+
+  // Show the cart on the page
+  function showCart() {
+    var html = "";
+    if (cart.length == 0) {
+      html = "Your cart is empty.";
+    }
+    for (var i = 0; i < cart.length; i++) {
+      var food = getFood(cart[i].id);
+      html += '<div class="cart-row">';
+      html += '<span class="cart-name">' + food.name + '</span>';
+      html += '<span class="cart-qty">';
+      html += '<button class="small-btn" onclick="removeFromCart(' + food.id + ')">-</button> ';
+      html += cart[i].qty;
+      html += ' <button class="small-btn" onclick="addToCart(' + food.id + ')">+</button>';
+      html += '</span>';
+      html += '<span class="cart-price">Rs. ' + (food.price * cart[i].qty) + '</span>';
+      html += '</div>';
+    }
+    document.getElementById("cartItems").innerHTML = html;
+    document.getElementById("total").innerHTML = "Rs. " + getTotal();
+    document.getElementById("cartCount").innerHTML = getCount() + " items";
+  }
+
+  // Place the order
+  function placeOrder() {
+    var name = document.getElementById("name").value;
+    var phone = document.getElementById("phone").value;
+    var address = document.getElementById("address").value;
+    var payment = document.getElementById("payment").value;
+    var valid = true;
+
+    // Clear old errors
+    document.getElementById("errName").innerHTML = "";
+    document.getElementById("errPhone").innerHTML = "";
+    document.getElementById("errAddress").innerHTML = "";
+    document.getElementById("errCart").innerHTML = "";
+
+    // Check each field
+    if (name.length < 2) {
+      document.getElementById("errName").innerHTML = "Please enter your name.";
+      valid = false;
+    }
+    if (phone.length != 10 || isNaN(phone)) {
+      document.getElementById("errPhone").innerHTML = "Enter a 10 digit phone number.";
+      valid = false;
+    }
+    if (address.length < 8) {
+      document.getElementById("errAddress").innerHTML = "Please enter your full address.";
+      valid = false;
+    }
+    if (cart.length == 0) {
+      document.getElementById("errCart").innerHTML = "Please add at least one item.";
+      valid = false;
+    }
+
+    // If all fields are good, show the popup
+    if (valid == true) {
+      var orderId = "QB" + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById("popupMessage").innerHTML =
+        "Thank you, " + name + "! Your food will arrive in about 30 minutes. Payment: " + payment;
+      document.getElementById("orderId").innerHTML = orderId;
+      document.getElementById("popupTotal").innerHTML = "Rs. " + getTotal();
+      document.getElementById("popup").style.display = "block";
+    }
+  }
+
+  // Close the popup and clear everything
+  function closePopup() {
+    document.getElementById("popup").style.display = "none";
+    cart = [];
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("address").value = "";
+    showCart();
+  }
+
+  // Run when the page opens
+  showMenu();
+  showCart();
+</script>
+
+</body>
+</html>
